@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Boss's Lab">
+  <meta name="format-detection" content="telephone=no">
+  <title>THE BOSS'S LAB — SHOPPING LIST</title>
+  <style>
+    /* CSS (CodePen) — FULL (mobile PWA feel, 2-column always, group headers) */
+    :root{
+      --bg:#0A0A0A;
+      --surface:#121212;
+      --text:#EDEDED;
+      --muted:#A8A8A8;
+
+      --accent:#B8860B;
+      --accent2:#FBBF24;
+
+      --stroke:rgba(184,134,11,0.22);
+      --shadow:0 18px 50px rgba(0,0,0,.55);
+      --r2:24px;
+
+      /* skull/flame header art (svg) */
+      --headerArt: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='320' viewBox='0 0 1200 320'%3E%3Cdefs%3E%3CradialGradient id='fire' cx='78%25' cy='84%25' r='85%25'%3E%3Cstop offset='0%25' stop-color='%23FBBF24' stop-opacity='.78'/%3E%3Cstop offset='35%25' stop-color='%23D97706' stop-opacity='.48'/%3E%3Cstop offset='70%25' stop-color='%23B8860B' stop-opacity='.22'/%3E%3Cstop offset='100%25' stop-color='%23000000' stop-opacity='0'/%3E%3C/radialGradient%3E%3ClinearGradient id='hood' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23101010'/%3E%3Cstop offset='100%25' stop-color='%23040404'/%3E%3C/linearGradient%3E%3ClinearGradient id='bone' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f5f5f5'/%3E%3Cstop offset='100%25' stop-color='%23cfcfcf'/%3E%3C/linearGradient%3E%3Cfilter id='s'%3E%3CfeDropShadow dx='0' dy='14' stdDeviation='14' flood-color='%23000000' flood-opacity='.65'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='1200' height='320' fill='%23060606'/%3E%3Ccircle cx='900' cy='175' r='270' fill='url(%23fire)'/%3E%3Cpath d='M930 40c-128 16-226 78-256 170-26 80 0 158 66 208 70 52 184 42 250-22 76-72 82-196 18-270-30-34-76-56-112-66-18-4-34-6-66-6z' fill='url(%23hood)' opacity='.98' filter='url(%23s)'/%3E%3Cpath d='M850 110c-62 6-106 42-112 92-8 58 28 118 86 140 66 24 136-16 156-72 24-64-18-150-96-160-12-2-20-2-34 0z' fill='url(%23bone)'/%3E%3Cellipse cx='826' cy='206' rx='30' ry='26' fill='%23000000' opacity='.92'/%3E%3Cellipse cx='898' cy='206' rx='30' ry='26' fill='%23000000' opacity='.92'/%3E%3Cpath d='M862 234l-10 18 20 0-10-18z' fill='%23000000' opacity='.84'/%3E%3C/svg%3E");
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+
+    body{
+      background: radial-gradient(1200px 700px at 30% -10%, rgba(251,191,36,.10), transparent 60%),
+                  linear-gradient(135deg,#0A0A0A 0%, #120909 55%, #050505 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      margin:0;
+      min-height:100vh;
+      overscroll-behavior: none;
+    }
+
+    /* subtle pattern */
+    body:before{
+      content:"";
+      position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cg opacity='.06'%3E%3Cpath d='M60 24c14 5 24 18 24 33 0 20-15 36-34 36S24 77 24 57c0-15 10-28 24-33' fill='none' stroke='%23B8860B' stroke-width='2'/%3E%3Ccircle cx='46' cy='54' r='5' fill='%23B8860B'/%3E%3Ccircle cx='74' cy='54' r='5' fill='%23B8860B'/%3E%3Cpath d='M48 72c8 6 16 6 24 0' stroke='%23B8860B' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3C/g%3E%3C/svg%3E");
+      background-size:240px 240px;
+      background-repeat:repeat;
+      opacity:.10;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    .app{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      z-index:1;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .topbar__art{
+      height:132px;
+      background-image:
+        linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.55)),
+        var(--headerArt);
+      background-size:cover;
+      background-position:right 35%;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .topbar__content{
+      padding:12px 16px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top, 0px));
+      max-width:1100px;
+      margin:0 auto;
+      position: relative;
+    }
+
+    .brand__title{font-weight:900;letter-spacing:1.8px;text-transform:uppercase;font-size:26px}
+    .brand__subtitle{margin-top:6px;font-size:11px;color:var(--muted);letter-spacing:1.4px;text-transform:uppercase}
+    .brand__pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+    .pill{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.86);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:1px;
+    }
+    .pill--hot{
+      background:rgba(251,191,36,.92);
+      color:#121212;
+      border-color:rgba(251,191,36,.55);
+    }
+
+    /* Shopping cart pill */
+    .cart-pill {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: rgba(251,191,36,.92);
+      color: #121212;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: 900;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      border: 1px solid rgba(251,191,36,.55);
+      transition: transform 0.1s ease;
+      z-index: 60;
+    }
+    .cart-pill:active { transform: scale(0.96); }
+    .cart-count {
+      background: #121212;
+      color: #FBBF24;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      margin-left: 4px;
+    }
+
+    .main{
+      flex:1;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      padding:18px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .view{animation:fade .18s ease}
+    .view[hidden]{display:none}
+
+    .hero{
+      border:1px solid var(--stroke);
+      border-radius:var(--r2);
+      background: linear-gradient(145deg, rgba(20,20,20,.86), rgba(10,10,10,.92));
+      box-shadow: var(--shadow);
+      padding:18px;
+      margin-bottom:18px;
+    }
+    .hero__tag{color:var(--accent2);font-weight:900;letter-spacing:2px;font-size:11px}
+    .hero__title{margin-top:10px;font-size:22px;font-weight:900;line-height:1.15}
+    .hero__sub{margin-top:10px;color:var(--muted);font-size:13px}
+
+    .gridHeader{display:flex;justify-content:space-between;align-items:baseline;margin:14px 2px 10px}
+    .gridHeader__title{font-weight:900;letter-spacing:1.2px;font-size:13px}
+    .gridHeader__sub{font-size:12px;color:var(--muted)}
+
+    /* ALWAYS 2 across */
+    .tileGrid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+
+    /* group header spans both columns */
+    .groupHeader{
+      grid-column:1 / -1;
+      margin-top:4px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      border-radius:16px;
+      padding:10px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+    }
+    .groupHeader__title{
+      font-weight:900;
+      letter-spacing:1.2px;
+      text-transform:uppercase;
+      font-size:12px;
+    }
+    .groupHeader__sub{
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .tile{
+      border:1px solid var(--stroke);
+      background:rgba(20,20,20,.64);
+      backdrop-filter: blur(10px);
+      border-radius:var(--r2);
+      padding:14px;
+      cursor:pointer;
+      transition:transform .12s ease, border-color .12s ease, background .12s ease;
+      min-height:104px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+    .tile:hover{transform:translateY(-1px); border-color: rgba(251,191,36,.28); background: rgba(28,24,18,.72)}
+    .tile__top{display:flex;gap:10px;align-items:center}
+    .tile__icon{
+      width:42px;height:42px;border-radius:14px;
+      display:grid;place-items:center;
+      border:1px solid rgba(255,255,255,.08);
+      background: radial-gradient(120px 90px at 30% 10%, rgba(251,191,36,.16), rgba(255,255,255,.05));
+      font-size:20px;
+    }
+    .tile__title{font-weight:900;letter-spacing:1px;text-transform:uppercase;font-size:13px}
+    .tile__sub{margin-top:4px;color:var(--muted);font-size:12px}
+    .tile__tag{
+      margin-top:10px;
+      display:inline-flex;
+      align-self:flex-start;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:1px;
+    }
+
+    .subTop{display:flex;gap:12px;align-items:center;margin:8px 0 14px}
+    .iconBtn{
+      border:1px solid var(--stroke);
+      background:rgba(20,20,20,.64);
+      color:var(--text);
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .subTop__title{font-size:22px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
+    .subTop__sub{margin-top:4px;color:var(--muted);font-size:12px}
+
+    /* Bottom sheet */
+    .sheetOverlay{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.70);
+      backdrop-filter: blur(8px);
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease;
+      z-index:80;
+    }
+    .sheetOverlay.is-open{opacity:1; pointer-events:auto}
+
+    .sheet{
+      position:fixed; left:0; right:0; bottom:0;
+      background:rgba(18,18,18,.98);
+      border-top:2px solid var(--stroke);
+      border-radius:28px 28px 0 0;
+      padding:18px;
+      padding-bottom: calc(18px + env(safe-area-inset-bottom, 18px));
+      transform: translateY(105%);
+      transition: transform .22s cubic-bezier(.2,.9,.3,1);
+      z-index:90;
+      max-height:82vh;
+      overflow:auto;
+    }
+    .sheet.is-open{transform:translateY(0)}
+    .sheet__handle{
+      width:44px;height:4px;border-radius:999px;
+      background:rgba(255,255,255,.18);
+      margin:0 auto 14px;
+    }
+    .sheet__title{font-size:22px;font-weight:900}
+    .sheet__meta{margin-top:6px;color:var(--muted);font-size:12px}
+    .sheet__price{margin-top:12px;font-size:28px;font-weight:900;color:var(--accent2)}
+    .sheet__row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .kv{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:10px;
+    }
+    .kv__k{font-size:10px;letter-spacing:1px;color:var(--muted);font-weight:900}
+    .kv__v{margin-top:6px;font-weight:900}
+    .sheet__section{margin-top:14px}
+    .label{font-size:10px;letter-spacing:1.4px;color:var(--muted);font-weight:900}
+    .text{margin-top:8px;line-height:1.6}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .chip{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.88);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:11px;
+      font-weight:900;
+    }
+    .sheet__actions{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:16px;
+    }
+    .btn{
+      display:inline-flex;
+      justify-content:center;
+      align-items:center;
+      border-radius:16px;
+      padding:12px 14px;
+      font-weight:900;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      text-decoration:none;
+      cursor:pointer;
+      font-size:14px;
+      transition: all 0.1s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn--primary{background: rgba(251,191,36,.92);border-color: rgba(251,191,36,.55);color:#121212}
+    .btn--success{background: #10B981; border-color: #059669; color: white;}
+    .btn--ghost{background: transparent}
+
+    /* Shopping list panel */
+    .shopping-list-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 400px;
+      background: rgba(10,10,10,.98);
+      backdrop-filter: blur(20px);
+      border-left: 2px solid var(--stroke);
+      transform: translateX(100%);
+      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      padding-top: calc(20px + env(safe-area-inset-top, 0px));
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    }
+    .shopping-list-panel.open { transform: translateX(0); }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--stroke);
+    }
+    .list-header h2 {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .close-list {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 28px;
+      cursor: pointer;
+      padding: 0 8px;
+    }
+
+    .list-items {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .item-info {
+      flex: 1;
+    }
+    .item-name {
+      font-weight: 900;
+      font-size: 15px;
+    }
+    .item-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .item-price {
+      font-weight: 900;
+      color: var(--accent2);
+      margin-right: 12px;
+    }
+    .remove-item {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #ef4444;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .list-footer {
+      border-top: 1px solid var(--stroke);
+      padding-top: 16px;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 900;
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+    .total-amount {
+      color: var(--accent2);
+    }
+    .list-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    @keyframes fade{from{opacity:0; transform: translateY(6px)}to{opacity:1; transform: translateY(0)}}
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="topbar__art" aria-hidden="true"></div>
+
+      <div class="topbar__content">
+        <div class="brand">
+          <div class="brand__title">THE BOSS'S LAB</div>
+          <div class="brand__subtitle">FLOWER • VAPES • CONCENTRATES • EDIBLES • MUSHROOMS</div>
+
+          <div class="brand__pills" aria-label="Store status">
+            <span class="pill pill--hot" id="pillOpen">OPEN</span>
+            <span class="pill">PICKUP</span>
+            <span class="pill">DELIVERY</span>
+          </div>
+        </div>
+
+        <!-- Shopping cart pill -->
+        <div class="cart-pill" id="cartPill">
+          <span>🛒</span>
+          <span id="cartTotal">$0</span>
+          <span class="cart-count" id="cartCount">0</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main" id="main">
+      <!-- HOME -->
+      <section class="view" id="viewHome">
+        <div class="hero">
+          <div class="hero__tag">REFERENCE MENU</div>
+          <div class="hero__title">Tap a category.<br>Pick an item.<br>Add to your list.</div>
+          <div class="hero__sub">Build your order • See total • Then call/text</div>
+        </div>
+
+        <div class="gridHeader">
+          <div class="gridHeader__title">CATEGORIES</div>
+          <div class="gridHeader__sub">Mobile-first • 2-column grid</div>
+        </div>
+
+        <div class="tileGrid" id="categoryGrid" aria-label="Categories"></div>
+      </section>
+
+      <!-- CATEGORY -->
+      <section class="view" id="viewCategory" hidden>
+        <div class="subTop">
+          <button class="iconBtn" id="btnBack" type="button" aria-label="Back">←</button>
+          <div class="subTop__meta">
+            <div class="subTop__title" id="categoryTitle">Category</div>
+            <div class="subTop__sub" id="categorySub">Tap an item to view details</div>
+          </div>
+        </div>
+
+        <div class="tileGrid" id="itemGrid" aria-label="Category items"></div>
+      </section>
+    </main>
+
+    <!-- Bottom Sheet Modal -->
+    <div class="sheetOverlay" id="sheetOverlay" aria-hidden="true"></div>
+
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetName" aria-describedby="sheetDesc">
+      <div class="sheet__handle" aria-hidden="true"></div>
+
+      <div class="sheet__top">
+        <div class="sheet__title" id="sheetName">Item Name</div>
+        <div class="sheet__meta" id="sheetMeta">Brand • Category</div>
+        <div class="sheet__price" id="sheetPrice">$—</div>
+      </div>
+
+      <div class="sheet__row">
+        <div class="kv">
+          <div class="kv__k">THC</div>
+          <div class="kv__v" id="sheetThc">—</div>
+        </div>
+        <div class="kv">
+          <div class="kv__k">CBD</div>
+          <div class="kv__v" id="sheetCbd">—</div>
+        </div>
+      </div>
+
+      <div class="sheet__section">
+        <div class="label">DESCRIPTION</div>
+        <div class="text" id="sheetDesc">—</div>
+      </div>
+
+      <div class="sheet__section">
+        <div class="label">NOTES</div>
+        <div class="chips" id="sheetEffects"></div>
+      </div>
+
+      <div class="sheet__section" id="sizesWrap" hidden>
+        <div class="label">PRICES / OPTIONS</div>
+        <div class="chips" id="sheetSizes"></div>
+      </div>
+
+      <div class="sheet__actions">
+        <button class="btn btn--primary" id="btnAddToList">➕ Add to Shopping List</button>
+        <a class="btn" id="btnCall" href="#" role="button">Call to Order</a>
+        <a class="btn" id="btnText" href="#" role="button">Text to Order</a>
+        <button class="btn" id="btnCopy" type="button">Copy Name</button>
+        <button class="btn btn--ghost" id="btnClose" type="button">Close</button>
+      </div>
+    </div>
+
+    <!-- Shopping List Panel -->
+    <div class="shopping-list-panel" id="shoppingListPanel">
+      <div class="list-header">
+        <h2>YOUR LIST 🛒</h2>
+        <button class="close-list" id="closeListBtn">✕</button>
+      </div>
+
+      <div class="list-items" id="listItems">
+        <!-- Items will be inserted here -->
+      </div>
+
+      <div class="list-footer">
+        <div class="total-row">
+          <span>TOTAL</span>
+          <span class="total-amount" id="listTotal">$0</span>
+        </div>
+        <div class="list-actions">
+          <a class="btn btn--primary" id="listCallBtn" href="#">📞 Call to Order List</a>
+          <a class="btn" id="listTextBtn" href="#">📱 Text List</a>
+          <button class="btn btn--ghost" id="clearListBtn">Clear List</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // JS (CodePen) — FULL with Shopping List
+    const STORE = {
+      name: "THE BOSS'S LAB",
+      phone: "(555) 123-4567",
+      text: "(555) 222-8888"
+    };
+
+    const PRODUCTS = [
+      // 🌿 FLOWER
+      {
+        id: "fl_exotic",
+        category: "flower",
+        name: "Exotic Flower",
+        brand: "Sweetz Exotics",
+        price: "$145 / oz",
+        numericPrice: 145,
+        sizes: ["Sealed ounces only"],
+        thc: "—",
+        cbd: "—",
+        effects: ["Strains vary"],
+        tags: ["Exotic"],
+        description: "Sweetz Exotics (sealed ounces only). Strains vary.",
+        inStock: true,
+        deal: false
+      },
+      {
+        id: "fl_zaza",
+        category: "flower",
+        name: "Zaza (Premium)",
+        brand: "Premium",
+        price: "From $16",
+        numericPrice: 16,
+        sizes: ["1/8 – $16", "Quarter – $32", "Half – $63", "Ounce – $125"],
+        thc: "—",
+        cbd: "—",
+        effects: ["Strain example: Galactic Warhead"],
+        tags: ["Premium"],
+        description: "Top shelf tier. Strains vary. Example: Galactic Warhead.",
+        inStock: true,
+        deal: false
+      },
+      {
+        id: "fl_loud",
+        category: "flower",
+        name: "Loud (Mids)",
+        brand: "Mids",
+        price: "From $13",
+        numericPrice: 13,
+        sizes: ["1/8 – $13", "Quarter – $25", "Half – $50", "Ounce – $100"],
+        thc: "—",
+        cbd: "—",
+        effects: ["Fat Gushers", "Lemon Haze", "Gush Mintz Big"],
+        tags: ["Mids"],
+        description: "Strains: Fat Gushers • Lemon Haze • Gush Mintz Big",
+        inStock: true,
+        deal: false
+      },
+      {
+        id: "fl_reggie",
+        category: "flower",
+        name: "Reggie",
+        brand: "Budget",
+        price: "$60 / oz",
+        numericPrice: 60,
+        sizes: ["Ounce – $60"],
+        thc: "—",
+        cbd: "—",
+        effects: ["Super Boof Cherry"],
+        tags: ["Reggie"],
+        description: "Strain: Super Boof Cherry.",
+        inStock: true,
+        deal: false
+      },
+
+      // 🚬 PRE-ROLLS (shown under Flower)
+      {
+        id: "pr_luigi_6",
+        category: "prerolls",
+        name: "Luigi Fatone 6-Pack",
+        brand: "Luigi",
+        price: "$55",
+        numericPrice: 55,
+        sizes: ["Glass tip cones"],
+        thc: "—",
+        cbd: "—",
+        effects: ["6-Pack"],
+        tags: ["Pre-Rolls"],
+        description: "Luigi Fatone 6-Pack (glass tip cones).",
+        inStock: true,
+        deal: false
+      },
+      {
+        id: "pr_packwoods",
+        category: "prerolls",
+        name: "Packwoods Mini Hash Rosin",
+        brand: "Packwoods",
+        price: "$25",
+        numericPrice: 25,
+        sizes: ["Clearance"],
+        thc: "—",
+        cbd: "—",
+        effects: ["Clearance"],
+        tags: ["Pre-Rolls"],
+        description: "Packwoods Mini Hash Rosin (clearance).",
+        inStock: true,
+        deal: true
+      },
+      {
+        id: "pr_kief_2g",
+        category: "prerolls",
+        name: "2G Kief Coated Singles",
+        brand: "Singles",
+        price: "$8",
+        numericPrice: 8,
+        sizes: ["2G"],
+        thc: "—",
+        cbd: "—",
+        effects: ["Kief coated"],
+        tags: ["Pre-Rolls"],
+        description: "2G kief coated singles.",
+        inStock: true,
+        deal: false
+      },
+      {
+        id: "pr_house_1_25",
+        category: "prerolls",
+        name: "1¼ House Singles",
+        brand: "House",
+        price: "$5",
+        numericPrice: 5,
+        sizes: ["1¼"],
+        thc: "—",
+        cbd: "—",
+        effects: ["House"],
+        tags: ["Pre-Rolls"],
+        description: "1¼ House Singles.",
+        inStock: true,
+        deal: false
+      },
+
+      // 💨 VAPES
+      {
+        id: "vp_1g_screw",
+        category: "vapes",
+        name: "1G Screw-On",
+        brand: "Premium Hybrid",
+        price: "$35",
+        numericPrice: 35,
+        sizes: ["Flavors vary"],
+        thc: "—",
+        cbd: "—",
+        effects: ["1G"],
+        tags: ["Vapes"],
+        description: "1G screw-on. Premium hybrid. Flavors vary.",
+        inStock: true,
+        deal: false
+      },
+      { id:"vp_2g_sprinkles", category:"vapes", name:"2G Disposable — Sprinkles", brand:"Clearance", price:"$25", numericPrice:25, sizes:["2G"], thc:"—", cbd:"—", effects:["Clearance"], tags:["2G","Deal"], description:"Sprinkles (Clearance).", inStock:true, deal:true },
+      { id:"vp_2g_bodega", category:"vapes", name:"2G Disposable — Bodega Boyz Dual Pod", brand:"Bodega Boyz", price:"$28", numericPrice:28, sizes:["2G • Dual Pod"], thc:"—", cbd:"—", effects:["Dual pod"], tags:["2G"], description:"Bodega Boyz Dual Pod.", inStock:true, deal:false },
+      { id:"vp_2g_boneheads", category:"vapes", name:"2G Disposable — BoneHeads Hybrid Pod", brand:"BoneHeads", price:"$35", numericPrice:35, sizes:["2G • Hybrid Pod"], thc:"—", cbd:"—", effects:["Hybrid"], tags:["2G"], description:"BoneHeads Hybrid Pod.", inStock:true, deal:false },
+      { id:"vp_luigi_s4", category:"vapes", name:"2G Disposable — Luigi Series 4", brand:"Luigi", price:"$38", numericPrice:38, sizes:["2G"], thc:"—", cbd:"—", effects:["Series 4"], tags:["2G"], description:"Luigi Series 4.", inStock:true, deal:false },
+      { id:"vp_luigi_s5", category:"vapes", name:"2G Disposable — Luigi Series 5", brand:"Luigi", price:"$45", numericPrice:45, sizes:["2G"], thc:"—", cbd:"—", effects:["Series 5"], tags:["2G"], description:"Luigi Series 5.", inStock:true, deal:false },
+      { id:"vp_luigi_s6", category:"vapes", name:"2G Disposable — Luigi Series 6", brand:"Luigi", price:"$45", numericPrice:45, sizes:["2G"], thc:"—", cbd:"—", effects:["Series 6"], tags:["2G"], description:"Luigi Series 6.", inStock:true, deal:false },
+      { id:"vp_colors_3g", category:"vapes", name:"3G Disposable — Colors 3G", brand:"Colors", price:"$30", numericPrice:30, sizes:["3G"], thc:"—", cbd:"—", effects:["3G"], tags:["3G"], description:"Colors 3G.", inStock:true, deal:false },
+      { id:"vp_fryed_3g", category:"vapes", name:"3G Disposable — Fryed 3G w/ Gummies", brand:"Fryed", price:"$45", numericPrice:45, sizes:["3G • w/ Gummies"], thc:"—", cbd:"—", effects:["Bundle"], tags:["3G"], description:"Fryed 3G with gummies.", inStock:true, deal:false },
+      { id:"vp_heisenburg_6g", category:"vapes", name:"6G Disposable — Heisenburg Extractions Dual Pods", brand:"Heisenburg Extractions", price:"$55", numericPrice:55, sizes:["6G • Dual Pods"], thc:"—", cbd:"—", effects:["6G"], tags:["6G"], description:"Heisenburg Extractions Dual Pods.", inStock:true, deal:false },
+
+      // 🧪 CONCENTRATES
+      { id:"cn_wax", category:"concentrates", name:"Wax / Dab", brand:"Wax", price:"From $10", numericPrice:10, sizes:["Gram – $10","Half Ounce – $100","Ounce – $200","Ounce (Bulk Special) – $145"], thc:"—", cbd:"—", effects:["Bulk special available"], tags:["Wax","Deal"], description:"Wax / dab pricing by weight.", inStock:true, deal:true },
+      { id:"cn_rso", category:"concentrates", name:"RSO — RedEye Rick Simpson Oil", brand:"RedEye", price:"$35", numericPrice:35, sizes:["1ml – 700mg","Sativa or Indica"], thc:"—", cbd:"—", effects:["Oil"], tags:["RSO"], description:"Rick Simpson Oil. Choose Sativa or Indica.", inStock:true, deal:false },
+
+      // 🍬 EDIBLES
+      { id:"ed_tokenbear", category:"edibles", name:"TokenBear Gummies", brand:"TokenBear", price:"$40", numericPrice:40, sizes:["10,000mg"], thc:"10,000mg", cbd:"—", effects:["Gummies"], tags:["Edibles"], description:"TokenBear 10,000mg gummies.", inStock:true, deal:false },
+      { id:"ed_clearchronic", category:"edibles", name:"ClearChronic Gummies", brand:"ClearChronic", price:"$30", numericPrice:30, sizes:["1000mg"], thc:"1000mg", cbd:"—", effects:["Gummies"], tags:["Edibles"], description:"1000mg ClearChronic gummies.", inStock:true, deal:false },
+      { id:"ed_treetop", category:"edibles", name:"TreeTop Hash Rosin Gummies", brand:"TreeTop", price:"$30", numericPrice:30, sizes:["1000mg"], thc:"1000mg", cbd:"—", effects:["Hash Rosin"], tags:["Edibles"], description:"1000mg TreeTop Hash Rosin gummies.", inStock:true, deal:false },
+      { id:"ed_canna", category:"edibles", name:"Canna Nerds / Canna Bears", brand:"Assorted", price:"$25", numericPrice:25, sizes:["500mg"], thc:"500mg", cbd:"—", effects:["Gummies"], tags:["Edibles"], description:"500mg Canna Nerds / Canna Bears.", inStock:true, deal:false },
+      { id:"ed_assorted", category:"edibles", name:"Assorted Gummies", brand:"Assorted", price:"$16", numericPrice:16, sizes:["1000mg / 1500mg"], thc:"1000–1500mg", cbd:"—", effects:["Gummies"], tags:["Edibles"], description:"Assorted gummies (1000mg / 1500mg).", inStock:true, deal:false },
+      { id:"ed_empire", category:"edibles", name:"Empire Chocolate Bar", brand:"Empire", price:"$40", numericPrice:40, sizes:["3000mg"], thc:"3000mg", cbd:"—", effects:["Chocolate"], tags:["Edibles"], description:"Empire Bar 3000mg.", inStock:true, deal:false },
+      { id:"ed_oobie", category:"edibles", name:"Oobie Doobie Double Shot", brand:"Oobie Doobie", price:"$10", numericPrice:10, sizes:["Drink"], thc:"—", cbd:"—", effects:["Drink"], tags:["Edibles"], description:"Double shot drink.", inStock:true, deal:false },
+      { id:"ed_pint", category:"edibles", name:"Full Pint (bring jar)", brand:"Drinks", price:"$25", numericPrice:25, sizes:["Bring jar"], thc:"—", cbd:"—", effects:["Drink"], tags:["Edibles"], description:"Full pint (bring jar).", inStock:true, deal:false },
+
+      // 🍄 MUSHROOMS
+      { id:"ms_gaia", category:"mushrooms", name:"Gaia’s Gift 4G Chocolate Bars", brand:"Gaia’s Gift", price:"$35", numericPrice:35, sizes:["4G"], thc:"—", cbd:"—", effects:["Chocolate"], tags:["Mushrooms"], description:"Gaia’s Gift 4G chocolate bars.", inStock:true, deal:false },
+      { id:"ms_caps", category:"mushrooms", name:"Mushroom Capsules 4G", brand:"Capsules", price:"$35", numericPrice:35, sizes:["4G"], thc:"—", cbd:"—", effects:["Capsules"], tags:["Mushrooms"], description:"Mushroom capsules 4G.", inStock:true, deal:false },
+      { id:"ms_bulk", category:"mushrooms", name:"Bulk Mushrooms (Pricing)", brand:"Bulk", price:"From $30", numericPrice:30, sizes:["Bulk pricing available","1/8 – $30","Quarter – $60","Half – $100","Full – $200"], thc:"—", cbd:"—", effects:["Bulk"], tags:["Mushrooms"], description:"Bulk pricing available by weight.", inStock:true, deal:false },
+    ];
+
+    const CATEGORIES = [
+      { key:"flower", title:"Flower", icon:"🌿", sub:"Flower + Pre-Rolls", tag:"MENU" },
+      { key:"vapes", title:"Vapes", icon:"💨", sub:"Disposables & Pods", tag:"MENU" },
+      { key:"concentrates", title:"Concentrates", icon:"🧪", sub:"Wax / Dab + RSO", tag:"MENU" },
+      { key:"edibles", title:"Edibles", icon:"🍬", sub:"Gummies • Bars • Drinks", tag:"MENU" },
+      { key:"mushrooms", title:"Mushrooms", icon:"🍄", sub:"Bars • Caps • Bulk", tag:"MENU" },
+    ];
+
+    // Shopping list state
+    let shoppingList = [];
+
+    // DOM elements
+    const elHome = document.getElementById("viewHome");
+    const elCat = document.getElementById("viewCategory");
+    const categoryGrid = document.getElementById("categoryGrid");
+    const itemGrid = document.getElementById("itemGrid");
+    const categoryTitle = document.getElementById("categoryTitle");
+    const categorySub = document.getElementById("categorySub");
+    const btnBack = document.getElementById("btnBack");
+
+    const sheetOverlay = document.getElementById("sheetOverlay");
+    const sheet = document.getElementById("sheet");
+    const sheetName = document.getElementById("sheetName");
+    const sheetMeta = document.getElementById("sheetMeta");
+    const sheetPrice = document.getElementById("sheetPrice");
+    const sheetThc = document.getElementById("sheetThc");
+    const sheetCbd = document.getElementById("sheetCbd");
+    const sheetDesc = document.getElementById("sheetDesc");
+    const sheetEffects = document.getElementById("sheetEffects");
+    const sizesWrap = document.getElementById("sizesWrap");
+    const sheetSizes = document.getElementById("sheetSizes");
+
+    const btnCall = document.getElementById("btnCall");
+    const btnText = document.getElementById("btnText");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnClose = document.getElementById("btnClose");
+    const btnAddToList = document.getElementById("btnAddToList");
+
+    // Shopping list elements
+    const cartPill = document.getElementById("cartPill");
+    const cartTotal = document.getElementById("cartTotal");
+    const cartCount = document.getElementById("cartCount");
+    const shoppingListPanel = document.getElementById("shoppingListPanel");
+    const closeListBtn = document.getElementById("closeListBtn");
+    const listItems = document.getElementById("listItems");
+    const listTotal = document.getElementById("listTotal");
+    const listCallBtn = document.getElementById("listCallBtn");
+    const listTextBtn = document.getElementById("listTextBtn");
+    const clearListBtn = document.getElementById("clearListBtn");
+
+    let activeCategory = null;
+    let currentProduct = null;
+
+    const normalizePhone = (p) => p.replace(/[^\d+]/g, "");
+    const telHref = "tel:" + normalizePhone(STORE.phone);
+    const smsHref = "sms:" + normalizePhone(STORE.text);
+
+    // Shopping list functions
+    function updateCartDisplay() {
+      const total = shoppingList.reduce((sum, item) => sum + (item.numericPrice || 0), 0);
+      cartTotal.textContent = `$${total}`;
+      cartCount.textContent = shoppingList.length;
+
+      // Update list panel
+      if (shoppingList.length === 0) {
+        listItems.innerHTML = '<div style="text-align: center; color: var(--muted); padding: 40px 0;">Your list is empty 🛒<br><br>Tap items and click "Add to List"</div>';
+      } else {
+        listItems.innerHTML = shoppingList.map(item => `
+          <div class="list-item" data-item-id="${item.id}">
+            <div class="item-info">
+              <div class="item-name">${escapeHtml(item.name)}</div>
+              <div class="item-meta">${escapeHtml(item.brand || "House")} • ${escapeHtml(prettyCat(item.category))}</div>
+            </div>
+            <div class="item-price">${escapeHtml(item.price)}</div>
+            <button class="remove-item" onclick="removeFromList('${item.id}')" aria-label="Remove">✕</button>
+          </div>
+        `).join('');
+      }
+      listTotal.textContent = `$${total}`;
+
+      // Update call/text links with list summary
+      const listSummary = shoppingList.map(item => `${item.name} (${item.price})`).join(', ');
+      const orderText = `Order request: ${listSummary}`;
+      listCallBtn.href = telHref;
+      listTextBtn.href = smsHref + `?&body=${encodeURIComponent(orderText)}`;
+    }
+
+    window.removeFromList = function(itemId) {
+      shoppingList = shoppingList.filter(item => item.id !== itemId);
+      updateCartDisplay();
+    };
+
+    function addToList(product) {
+      // Check if already in list
+      if (shoppingList.some(item => item.id === product.id)) {
+        alert('Item already in your list!');
+        return;
+      }
+      shoppingList.push(product);
+      updateCartDisplay();
+
+      // Show feedback
+      btnAddToList.textContent = "✅ Added!";
+      setTimeout(() => btnAddToList.textContent = "➕ Add to Shopping List", 1000);
+    }
+
+    function clearList() {
+      if (shoppingList.length > 0 && confirm('Clear your entire shopping list?')) {
+        shoppingList = [];
+        updateCartDisplay();
+      }
+    }
+
+    // Original functions (preserved)
+    function showHome(){
+      elHome.hidden = false;
+      elCat.hidden = true;
+      activeCategory = null;
+      closeSheet();
+    }
+
+    function showCategory(key){
+      activeCategory = key;
+      elHome.hidden = true;
+      elCat.hidden = false;
+
+      const cat = CATEGORIES.find(c=>c.key===key);
+      categoryTitle.textContent = cat ? cat.title : key.toUpperCase();
+
+      categorySub.textContent =
+        key === "flower" ? "Flower pricing + pre-rolls" :
+        key === "vapes" ? "Disposables & pods — flavors vary" :
+        key === "concentrates" ? "Wax / dab + RSO" :
+        key === "edibles" ? "Gummies • chocolate • drinks" :
+        key === "mushrooms" ? "Chocolate • capsules • bulk" :
+        "Tap an item to view details";
+
+      renderItems(key);
+      closeSheet();
+    }
+
+    function renderCategories(){
+      categoryGrid.innerHTML = CATEGORIES.map(c=>`
+        <div class="tile" data-open-category="${c.key}" role="button" tabindex="0" aria-label="${c.title}">
+          <div class="tile__top">
+            <div class="tile__icon">${c.icon}</div>
+            <div>
+              <div class="tile__title">${escapeHtml(c.title)}</div>
+              <div class="tile__sub">${escapeHtml(c.sub)}</div>
+            </div>
+          </div>
+          <div class="tile__tag">${escapeHtml(c.tag)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderGroup(title, sub){
+      return `
+        <div class="groupHeader" aria-hidden="true">
+          <div class="groupHeader__title">${escapeHtml(title)}</div>
+          <div class="groupHeader__sub">${escapeHtml(sub || "")}</div>
+        </div>
+      `;
+    }
+
+    function renderTile(p){
+      const deal = p.deal ? " • DEAL" : "";
+      return `
+        <div class="tile" data-open-item="${p.id}" role="button" tabindex="0" aria-label="${escapeHtml(p.name)}">
+          <div class="tile__top">
+            <div class="tile__icon">${iconForCategory(p.category)}</div>
+            <div>
+              <div class="tile__title">${escapeHtml(p.name)}</div>
+              <div class="tile__sub">${escapeHtml(p.brand || "House")} • ${escapeHtml(prettyCat(p.category))}${deal}</div>
+            </div>
+          </div>
+          <div class="tile__tag">${escapeHtml(p.price || "")}</div>
+        </div>
+      `;
+    }
+
+    function renderItems(key){
+      let html = "";
+
+      if (key === "flower") {
+        const flowerItems = PRODUCTS.filter(p=>p.category==="flower");
+        html += renderGroup("🌿 Flower", "Strains vary");
+        html += flowerItems.map(renderTile).join("");
+
+        const pre = PRODUCTS.filter(p=>p.category==="prerolls");
+        html += renderGroup("🚬 Pre-Rolls", "Singles & packs");
+        html += pre.map(renderTile).join("");
+      } else if (key === "vapes") {
+        html += renderGroup("💨 Vapes", "Disposables & pods • flavors vary");
+        html += PRODUCTS.filter(p=>p.category==="vapes").map(renderTile).join("");
+      } else {
+        html += PRODUCTS.filter(p=>p.category===key).map(renderTile).join("");
+      }
+
+      itemGrid.innerHTML = html || renderGroup("No items", "Nothing to show");
+    }
+
+    function iconForCategory(key){
+      if (key === "flower") return "🌿";
+      if (key === "prerolls") return "🚬";
+      if (key === "vapes") return "💨";
+      if (key === "concentrates") return "🧪";
+      if (key === "edibles") return "🍬";
+      if (key === "mushrooms") return "🍄";
+      return "☰";
+    }
+
+    function prettyCat(key){
+      const map = {
+        flower: "Flower",
+        prerolls: "Pre-Rolls",
+        vapes: "Vapes",
+        concentrates: "Concentrates",
+        edibles: "Edibles",
+        mushrooms: "Mushrooms"
+      };
+      return map[key] || key;
+    }
+
+    function openSheet(product){
+      currentProduct = product;
+      sheetName.textContent = product.name;
+      sheetMeta.textContent = `${product.brand || "House"} • ${prettyCat(product.category)}${product.deal ? " • DEAL" : ""}`;
+      sheetPrice.textContent = product.price || "—";
+      sheetThc.textContent = product.thc || "—";
+      sheetCbd.textContent = product.cbd || "—";
+      sheetDesc.textContent = product.description || "—";
+
+      // Notes/effects chips
+      const notes = (product.effects || []).slice(0, 10);
+      sheetEffects.innerHTML = notes.length
+        ? notes.map(e=>`<span class="chip">${escapeHtml(e)}</span>`).join("")
+        : `<span class="chip">—</span>`;
+
+      // Price/options chips
+      const sizes = product.sizes || [];
+      if (sizes.length){
+        sizesWrap.hidden = false;
+        sheetSizes.innerHTML = sizes.map(s=>`<span class="chip">${escapeHtml(s)}</span>`).join("");
+      } else {
+        sizesWrap.hidden = true;
+        sheetSizes.innerHTML = "";
+      }
+
+      btnCall.href = telHref;
+      btnText.href = smsHref + `?&body=${encodeURIComponent("Order request: " + product.name)}`;
+
+      sheetOverlay.classList.add("is-open");
+      sheet.classList.add("is-open");
+    }
+
+    function closeSheet(){
+      sheetOverlay.classList.remove("is-open");
+      sheet.classList.remove("is-open");
+      currentProduct = null;
+    }
+
+    // Event Listeners
+    btnCopy.addEventListener("click", async ()=>{
+      const text = sheetName.textContent.trim();
+      try{
+        await navigator.clipboard.writeText(text);
+        btnCopy.textContent = "Copied ✓";
+        setTimeout(()=>btnCopy.textContent="Copy Name", 900);
+      }catch{
+        btnCopy.textContent = "Copy failed";
+        setTimeout(()=>btnCopy.textContent="Copy Name", 900);
+      }
+    });
+
+    btnAddToList.addEventListener("click", ()=>{
+      if (currentProduct) {
+        addToList(currentProduct);
+      }
+    });
+
+    sheetOverlay.addEventListener("click", closeSheet);
+    btnClose.addEventListener("click", closeSheet);
+
+    // Swipe down close
+    let startY = 0;
+    sheet.addEventListener("touchstart", (e)=>{ startY = e.touches[0].clientY; }, {passive:true});
+    sheet.addEventListener("touchmove", (e)=>{
+      const dy = e.touches[0].clientY - startY;
+      if (dy > 0){
+        e.preventDefault();
+        sheet.style.transform = `translateY(${dy}px)`;
+      }
+    }, {passive:false});
+    sheet.addEventListener("touchend", (e)=>{
+      const dy = e.changedTouches[0].clientY - startY;
+      sheet.style.transform = "";
+      if (dy > 100) closeSheet();
+    }, {passive:true});
+
+    document.addEventListener("click", (e)=>{
+      const catBtn = e.target.closest("[data-open-category]");
+      if (catBtn){
+        showCategory(catBtn.dataset.openCategory);
+        return;
+      }
+      const itemBtn = e.target.closest("[data-open-item]");
+      if (itemBtn){
+        const p = PRODUCTS.find(x=>x.id===itemBtn.dataset.openItem);
+        if (p) openSheet(p);
+        return;
+      }
+    });
+
+    btnBack.addEventListener("click", showHome);
+
+    // Shopping list panel controls
+    cartPill.addEventListener("click", ()=>{
+      shoppingListPanel.classList.add("open");
+    });
+
+    closeListBtn.addEventListener("click", ()=>{
+      shoppingListPanel.classList.remove("open");
+    });
+
+    clearListBtn.addEventListener("click", clearList);
+
+    document.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape"){
+        if (shoppingListPanel.classList.contains("open")) {
+          shoppingListPanel.classList.remove("open");
+        } else if (sheet.classList.contains("is-open")) {
+          closeSheet();
+        } else {
+          showHome();
+        }
+      }
+    });
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // Initialize
+    renderCategories();
+    showHome();
+    updateCartDisplay();
+  </script>
+</body>
+</html>
